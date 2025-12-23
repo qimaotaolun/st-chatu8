@@ -6,6 +6,7 @@ import { saveChatDebounced, saveSettingsDebounced, eventSource } from "../../../
 import { initializeImageProcessing } from "./iframe.js";
 import { processCharacterPrompt } from "./characterprompt.js";
 import { bananaGenerate } from "./banana.js";
+import { decryptImageFromBase64, autoDecryptImage } from "./comfyui_decrypt.js";
 async function replacepro(_0x3d922f, _0x12ff3a) {
   console.log("payload222", _0x3d922f);
   _0x12ff3a = _0x12ff3a.replaceAll("\"%seed%\"", Number(_0x3d922f.seed));
@@ -184,6 +185,16 @@ export async function generateComfyUIImage({
       }
       addLog("图片生成成功 (jiuguan client)。");
       _0x1ef32a = "data:image/" + _0x574086 + ";base64," + _0x13170c;
+      
+      // 尝试解密图片（如果是加密的）
+      try {
+        const decryptPassword = extension_settings[extensionName]?.decryptPassword || "123qwe";
+        addLog("尝试使用密码解密图片...");
+        _0x1ef32a = await autoDecryptImage(_0x1ef32a, decryptPassword);
+        addLog("图片解密成功。");
+      } catch (decryptError) {
+        addLog("图片未加密或解密失败，使用原始图片: " + decryptError.message);
+      }
     } else {
       const _0x3c2be5 = new URL(_0x5508ef + "/prompt");
       const _0x4d420e = await fetch(_0x3c2be5, {
@@ -237,6 +248,16 @@ export async function generateComfyUIImage({
               _0x3dbb44.onerror = _0x4d16b7;
               _0x3dbb44.readAsDataURL(_0x5b3ee7);
             });
+            
+            // 尝试解密图片（如果是加密的）
+            try {
+              const decryptPassword = extension_settings[extensionName]?.decryptPassword || "123qwe";
+              addLog("尝试使用密码解密图片...");
+              _0x1ef32a = await autoDecryptImage(_0x1ef32a, decryptPassword);
+              addLog("图片解密成功。");
+            } catch (decryptError) {
+              addLog("图片未加密或解密失败，使用原始图片: " + decryptError.message);
+            }
             break;
           }
           await sleep(1000);
